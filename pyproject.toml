@@ -10,11 +10,15 @@ python = ">=3.10,<3.13"
 dask = {extras = ["complete"], version = "^2024.10.0"}
 scikit-learn = "^1.5.2"
 sqlalchemy = "<2.0"
+jsonlogformatter = "^1.0.5"
+pydantic = "^2.9.2"
+pydantic-settings = "^2.6.0"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 apache-airflow = "^2.10.2"
+polyfactory = "^2.17.0"
 
 [build-system]
 requires = ["poetry-core"]

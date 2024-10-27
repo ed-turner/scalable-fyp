@@ -60,3 +60,22 @@ user_relates_with_user = Table(
     Column('relation_type', String)
 )
 
+training_data = Table(
+    "training_data",
+    metadata,
+    Column('id', Integer, primary_key=True),
+    Column('content_id', ForeignKey('social_media_content.id')),
+    Column('user_id', ForeignKey('users.id')),
+    Column('content', String),
+    Column('viewed_at', DateTime),
+    Column('created_at', DateTime),
+    Column('viewer_gender', String),
+    Column('viewer_birthdate', DateTime),
+    Column('viewer_ethnicity', String),
+    Column('creator_gender', String),
+    Column('creator_birthdate', DateTime),
+    Column('creator_ethnicity', String),
+    Column('label', Integer),
+    Column('group', Integer)
+)
+

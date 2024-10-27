@@ -49,19 +49,25 @@ def define_training_data_query():
         users, users.c.id == social_media_content_views.c.viewed_by
     ).cte('label_data')
 
+    groups = select([
+        label_data.c.user_id,
+        func.sum(func.count()).over().label('group')
+        ]
+    ).select_from(
+        label_data
+    ).group_by(
+        label_data.c.user_id
+    ).cte('groups')
+
     query = select([
         label_data.c.content_id,
         label_data.c.user_id,
-        label_data.c.viewed_at,
-        label_data.c.commented_at,
-        label_data.c.liked_at,
         label_data.c.viewer_gender,
         label_data.c.viewer_birthdate,
         label_data.c.viewer_ethnicity,
         users.c.gender.label("creator_gender"),
         users.c.birthdate.label("creator_birthdate"),
         users.c.ethnicity.label("creator_ethnicity"),
-        social_media_content.c.creator_id,
         social_media_content.c.content,
         social_media_content.c.created_at,
         case(
@@ -72,6 +78,7 @@ def define_training_data_query():
             ],
             else_=4
         ).label('label'),
+        groups.c.group
     ]
     ).select_from(
         label_data
@@ -79,6 +86,8 @@ def define_training_data_query():
         social_media_content, social_media_content.c.id == label_data.c.content_id
     ).join(
         users, users.c.id == social_media_content.c.creator_id
+    ).join(
+        groups, groups.c.user_id == label_data.c.user_id
     )
 
     return query

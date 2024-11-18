@@ -14,3 +14,10 @@ In the cloud, we would use native cloud services to orchestrate the data process
     1. A cluster to distribute the data processing (e.g. `dataproc` in GCP or `ECS` in AWS).
     2. A managed database service (e.g. `RDS` in AWS or `Cloud SQL` in GCP).
     3. A managed workflow service (e.g. `Cloud Composer` in GCP or `Managed Airflow` in AWS).
+
+
+# Example Runbook
+
+1. Start the postgres service and the object bucket storage service.
+2. Execute psql commands to create the mlflow schema (i.e. `CREATE SCHEMA mlflow_schema`)
+3. Initiate the mlflow server

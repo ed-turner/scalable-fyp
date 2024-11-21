@@ -60,6 +60,7 @@ def define_training_data_query():
     ).cte('groups')
 
     query = select([
+        func.row_number().over().label('rn'),
         label_data.c.content_id,
         label_data.c.user_id,
         label_data.c.viewer_gender,
@@ -126,6 +127,7 @@ def define_inference_data_query():
         ).cte('viewer_data')
 
     query = select([
+        func.row_number().over().label('rn'),
         viewer_query.c.content_id,
         viewer_query.c.user_id,
         viewer_query.c.viewer_gender,

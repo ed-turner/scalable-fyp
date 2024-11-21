@@ -91,3 +91,54 @@ def define_training_data_query():
     )
 
     return query
+
+
+def define_inference_data_query():
+    """
+    Define the query to retrieve the inference data from the database.
+    """
+    creator_query = select([
+        social_media_content.c.content,
+        social_media_content.c.created_at,
+        social_media_content.c.id.label('content_id'),
+        users.c.id.label('user_id'),
+        users.c.gender.label("creator_gender"),
+        users.c.birthdate.label("creator_birthdate"),
+        users.c.ethnicity.label("creator_ethnicity"),
+        ]).select_from(
+            social_media_content
+        ).join(
+            users, users.c.id == social_media_content.c.creator_id
+        ).cte('creator_data')
+
+    viewer_query = select([
+        social_media_content.c.id.label('content_id'),
+        users.c.id.label('user_id'),
+        users.c.gender.label("viewer_gender"),
+        users.c.birthdate.label("viewer_birthdate"),
+        users.c.ethnicity.label("viewer_ethnicity"),
+        ]).select_from(
+            social_media_content
+        ).join(
+            social_media_content_views, social_media_content_views.c.content_id == social_media_content.c.id
+        ).join(
+            users, users.c.id == social_media_content_views.c.viewed_by
+        ).cte('viewer_data')
+
+    query = select([
+        viewer_query.c.content_id,
+        viewer_query.c.user_id,
+        viewer_query.c.viewer_gender,
+        viewer_query.c.viewer_birthdate,
+        viewer_query.c.viewer_ethnicity,
+        creator_query.c.creator_gender,
+        creator_query.c.creator_birthdate,
+        creator_query.c.creator_ethnicity
+        ]
+    ).select_from(
+        viewer_query
+    ).join(
+        creator_query, creator_query.c.content_id == viewer_query.c.content_id
+    )
+
+    return query

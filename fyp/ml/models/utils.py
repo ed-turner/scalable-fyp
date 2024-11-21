@@ -80,16 +80,16 @@ def define_model_pipeline() -> Pipeline:
 
 def define_parameter_space():
     return {
-        "preprocessor__textual__ngram_range_max": hp.uniform("preprocessor__textual__ngram_range_max", low=1, high=3),
-        "preprocessor__textual__ngram_range_min": hp.uniform("preprocessor__textual__ngram_range_min", low=1, high=3),
+        "preprocessor__textual__ngram_range_max": hp.uniformint("preprocessor__textual__ngram_range_max", low=1, high=3),
+        "preprocessor__textual__ngram_range_min": hp.uniformint("preprocessor__textual__ngram_range_min", low=1, high=3),
         "preprocessor__textual__binary": hp.choice("preprocessor__textual__binary", [True, False]),
         "preprocessor__textual__norm": hp.choice("preprocessor__textual__norm", ['l1', 'l2', None]),
         "preprocessor__textual__use_idf": hp.choice("preprocessor__textual__use_idf", [True, False]),
         "preprocessor__textual__smooth_idf": hp.choice("preprocessor__textual__smooth_idf", [True, False]),
         "preprocessor__textual__sublinear_tf": hp.choice("preprocessor__textual__sublinear_tf", [True, False]),
-        "ranker__n_estimators": hp.uniform("ranker__n_estimators", low=100, high=1000),
+        "ranker__n_estimators": hp.uniformint("ranker__n_estimators", low=100, high=1000),
         "ranker__learning_rate": hp.loguniform("ranker__learning_rate", low=1e-14, high=1.0),
-        "ranker__max_depth": hp.uniform("ranker__max_depth", low=0, high=20),
+        "ranker__max_depth": hp.uniformint("ranker__max_depth", low=0, high=20),
         "ranker__subsample": hp.uniform("ranker__subsample", 0.5, 1.0),
         "ranker__colsample_bytree": hp.uniform("ranker__colsample_bytree", 0.5, 1.0),
         "ranker__colsample_bylevel": hp.uniform("ranker__colsample_bylevel", 0.5, 1.0),

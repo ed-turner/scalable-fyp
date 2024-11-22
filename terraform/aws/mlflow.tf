@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "mlflow" {
 
 resource "aws_ecs_task_definition" "mlflow" {
     family = "mlflow"
-
+    network_mode = "awsvpc"
     container_definitions = jsonencode([
       {
         name      = "mlflow"

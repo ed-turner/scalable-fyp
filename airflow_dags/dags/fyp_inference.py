@@ -1,17 +1,15 @@
+import boto3
 
 from airflow import DAG
 from airflow.providers.amazon.aws.operators.ecs import EcsRunTaskOperator
 
-# this should be a ssm parameter
-existing_cluster_name = "existing_cluster_name"
+boto_session = boto3.Session()
+ssm = boto_session.client("ssm")
 
-existing_task_definition = "existing_task_definition"
-
-# this should be a ssm parameter
-log_group_name = "log_group_name"
-
-# this should be a ssm parameter
-existing_cluster_subnets = ["subnet-12345678", "subnet-87654321"]
+existing_cluster_name = ssm.get_parameter(Name="/fyp/ecs/cluster_name")["Parameter"]["Value"]
+existing_task_definition = ssm.get_parameter(Name="/fyp/ecs/task_definition")["Parameter"]["Value"]
+log_group_name = ssm.get_parameter(Name="/fyp/ecs/log_group")["Parameter"]["Value"]
+existing_cluster_subnets = ssm.get_parameter(Name="/fyp/vpc/private_subnets")["Parameter"]["Value"].split(",")
 
 with DAG(
     "fyp_inference",

@@ -2,6 +2,8 @@
 This module contains the inference functions for the machine learning models.
 """
 import logging
+import argparse
+from datetime import UTC, datetime
 
 import numpy as np
 
@@ -18,6 +20,12 @@ from fyp.data.db.queries import define_inference_data_query
 logger = logging.getLogger()
 settings = Settings()
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--execution_timestamp", type=str, required=True, default=lambda: datetime.now(UTC).isoformat())
+
+args = parser.parse_args()
+
 engine = create_engine(settings.DB_URI)
 mlflow.set_tracking_uri(settings.MLFLOW_URI)
 
@@ -30,7 +38,7 @@ model = mlflow.sklearn.load_model(f"models:/xgb_ranker/{results[0].latest_versio
 with LocalCluster() as cluster:
     with Client(cluster):
         ddf: dd.DataFrame = dd.read_sql_query(
-        define_inference_data_query(),
+        define_inference_data_query(args.execution_timestamp),
         con=settings.DB_URI,
         index_col="rn",
         params={

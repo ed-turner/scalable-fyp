@@ -3,6 +3,10 @@ resource "aws_ecr_repository" "job" {
   name = "/org/ai/fyp"
 }
 
+resource "aws_cloudwatch_log_group" "job" {
+  name = "/org/ai/fyp"
+}
+
 resource "aws_ecs_task_definition" "job" {
   family                = "fyp-job"
   network_mode          = "awsvpc"
@@ -11,6 +15,7 @@ resource "aws_ecs_task_definition" "job" {
   requires_compatibilities = ["FARGATE"]
   execution_role_arn     = aws_iam_role.execution_role.arn
   task_role_arn          = aws_iam_role.task_role.arn
+
   container_definitions = jsonencode([
     {
       name      = "job"

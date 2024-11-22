@@ -94,7 +94,7 @@ def define_training_data_query():
     return query
 
 
-def define_inference_data_query():
+def define_inference_data_query(execution_timestamp: str):
     """
     Define the query to retrieve the inference data from the database.
     """
@@ -160,7 +160,79 @@ def define_inference_data_query():
     ).join(
         creator_query, creator_query.c.content_id == viewer_query.c.content_id
     )).where(
+        creator_query.c.created_at > execution_timestamp
+    ).where(
         viewer_query.c.viewed_at is None
     )
 
     return query
+
+
+def define_analysis_query(execution_timestamp: str):
+    """
+    Define the query to retrieve the analysis data from the database.
+    """
+    comment_data = select([
+        social_media_content.c.created_at.label('commented_at'),
+        social_media_content_comments.c.parent_content_id.label('content_id'),
+        social_media_content.c.creator_id.label('commented_by'),
+    ]).select_from(
+        social_media_content
+    ).join(
+        social_media_content_comments,
+        social_media_content.c.id == social_media_content_comments.c.content_id
+    ).cte('comment_data')
+
+    label_data = select([
+        social_media_content_views.c.content_id.label('content_id'),
+        social_media_content_views.c.viewed_by.label('user_id'),
+        social_media_content_views.c.viewed_at,
+        comment_data.c.commented_at,
+        social_media_content_likes.c.liked_at,
+    ]).select_from(
+        social_media_content_views
+    ).join(
+        comment_data,
+        and_(
+            social_media_content_views.c.content_id == comment_data.c.content_id,
+            social_media_content_views.c.viewed_by == comment_data.c.commented_by
+        ),
+        isouter=True
+    ).join(
+        social_media_content_likes, and_(
+            social_media_content_views.c.content_id == social_media_content_likes.c.content_id,
+            social_media_content_views.c.viewed_by == social_media_content_likes.c.liked_by
+        ),
+        isouter=True
+    ).cte('label_data')
+
+    query = select([
+        func.row_number().over().label('rn'),
+        label_data.c.content_id,
+        label_data.c.user_id,
+        case(
+            [
+                (and_(label_data.c.liked_at.isnot(None), label_data.c.commented_at.isnot(None)), 1),
+                (label_data.c.liked_at.isnot(None), 2),
+                (label_data.c.commented_at.isnot(None), 3),
+            ],
+            else_=4
+        ).label('label')
+    ]
+    ).select_from(
+        label_data
+    ).join(
+        social_media_content, social_media_content.c.id == label_data.c.content_id
+    ).where(
+        social_media_content.c.created_at > execution_timestamp
+    )
+
+    return select([
+        query.c.user_id,
+        query.c.label,
+        func.count().label('count')
+    ]).select_from(
+        label_data
+    ).group_by(
+        label_data.c.user_id
+    )

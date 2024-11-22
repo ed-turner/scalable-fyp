@@ -35,3 +35,9 @@ resource "aws_ssm_parameter" "fyp_task_definition" {
   type = "String"
   value = aws_ecs_task_definition.job.arn
 }
+
+resource "aws_ssm_parameter" "fyp_log_group" {
+  name = "/fyp/ecs/log_group"
+  type = "String"
+  value = aws_cloudwatch_log_group.job.name
+}

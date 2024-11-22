@@ -112,7 +112,17 @@ def define_inference_data_query():
             users, users.c.id == social_media_content.c.creator_id
         ).cte('creator_data')
 
+    universe_query = select([
+        social_media_content.c.id.label('content_id'),
+        users.c.id.label('user_id')
+    ]).select_from(
+        social_media_content
+    ).join(
+        users, True
+    ).cte('universe_data')
+
     viewer_query = select([
+        social_media_content_views.c.viewed_at,
         social_media_content.c.id.label('content_id'),
         users.c.id.label('user_id'),
         users.c.gender.label("viewer_gender"),
@@ -126,21 +136,31 @@ def define_inference_data_query():
             users, users.c.id == social_media_content_views.c.viewed_by
         ).cte('viewer_data')
 
-    query = select([
+    query = (select([
         func.row_number().over().label('rn'),
         viewer_query.c.content_id,
         viewer_query.c.user_id,
         viewer_query.c.viewer_gender,
         viewer_query.c.viewer_birthdate,
         viewer_query.c.viewer_ethnicity,
+        viewer_query.c.viewed_at,
         creator_query.c.creator_gender,
         creator_query.c.creator_birthdate,
-        creator_query.c.creator_ethnicity
+        creator_query.c.creator_ethnicity,
+        creator_query.c.content,
+        creator_query.c.created_at,
         ]
     ).select_from(
-        viewer_query
+        universe_query
+    ).join(
+      viewer_query, and_(
+            viewer_query.c.content_id == universe_query.c.content_id,
+            viewer_query.c.user_id == universe_query.c.user_id
+        ), isouter=True
     ).join(
         creator_query, creator_query.c.content_id == viewer_query.c.content_id
+    )).where(
+        viewer_query.c.viewed_at is None
     )
 
     return query

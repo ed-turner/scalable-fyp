@@ -13,7 +13,7 @@ existing_cluster_subnets = ssm.get_parameter(Name="/fyp/vpc/private_subnets")["P
 
 with DAG(
     "fyp_inference",
-    schedule_interval=None,
+    schedule_interval="@daily",
     default_args={
         "owner": "airflow",
         "depends_on_past": False,
